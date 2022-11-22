@@ -1,19 +1,24 @@
 ﻿using DigitalVegetables.Models;
 using Microsoft.AspNetCore.Hosting;
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
-using System;
+using System.Threading.Tasks;
+using static DigitalVegetables.Services.JasonProductFile;
 
 namespace DigitalVegetables.Services
 {
     public class JasonProductFile
     {
+
+        public IWebHostEnvironment WebHostEnvironment;
         public JasonProductFile(IWebHostEnvironment webHostEnvironment)
+
         {
             WebHostEnvironment = webHostEnvironment;
         }
-        public IWebHostEnvironment WebHostEnvironment { get; }
 
         public string JsonFilePath
         {
@@ -22,6 +27,7 @@ namespace DigitalVegetables.Services
                 return Path.Combine(WebHostEnvironment.WebRootPath, "data", "Vegetables.json");
             }
         }
+
         public IEnumerable<Product> getProductsData()
         {
             using (var json_file = File.OpenText(JsonFilePath))
@@ -30,9 +36,18 @@ namespace DigitalVegetables.Services
             }
         }
 
-        internal void setProductRecords(Product obj, JasonProductFile productService)
+        public void setProductsData(Product obj, JasonProductFile ProductService)
         {
-            throw new NotImplementedException();
+            IEnumerable<Product> ProductRecords = ProductService.getProductsData();
+            List<Product> listProductRecords = ProductRecords.ToList();
+            listProductRecords.Add(obj);
+
+            string finalData = JsonSerializer.Serialize<List<Product>>(listProductRecords);
+            StreamWriter json_file = new StreamWriter(JsonFilePath);
+            json_file.Write(finalData);
+            json_file.Flush();
+            json_file.Close();
         }
+
     }
 }
